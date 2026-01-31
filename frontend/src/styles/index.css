@@ -1,0 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+    --color-background: var(--background);
+    --color-surface: var(--surface);
+    --color-surface-muted: var(--surface-muted);
+    --color-text: var(--text);
+    --color-text-sub: var(--text-sub);
+    --color-accent: var(--accent);
+    --color-accent-alt: var(--accent-alt);
+    --color-border: var(--border);
+    --color-success: var(--success);
+    --color-warning: var(--warning);
+    --color-error: var(--error);
+
+    --font-mono: "JetBrains Mono", monospace;
+
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+
+    --shadow-card: 0 4px 6px -1px var(--shadow-color), 0 2px 4px -2px var(--shadow-color);
+    --shadow-card-hover: 0 10px 15px -3px var(--shadow-color), 0 4px 6px -4px var(--shadow-color);
+    --shadow-button: 0 1px 2px 0 var(--shadow-color);
+}
+
+:root {
+    --background: #dcdcdc;
+    --surface: #ffffff;
+    --surface-muted: #D9D9D9;
+    --text: #111114;
+    --text-sub: #6b6b6d;
+    --accent: #FF6A00;
+    --accent-alt: #ff8b33;
+    --border: #e0e0e0;
+    --success: #1f8f4b;
+    --warning: #ffb86b;
+    --error: #a22121;
+    --shadow-color: rgba(16, 16, 16, 0.06);
+}
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) transparent;
+}
+
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: var(--accent);
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background-color: var(--accent-alt);
+}
+
+body {
+    background-color: var(--background);
+    color: var(--text);
+    font-family: "Figtree", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+    background-color: var(--accent);
+    color: white;
+}

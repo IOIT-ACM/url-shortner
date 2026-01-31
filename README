@@ -1,0 +1,17 @@
+// create db and run docker container
+
+docker run --name links-db \
+  -e MYSQL_ROOT_PASSWORD=secret \
+  -e MYSQL_DATABASE=links_db \
+  -p 3306:3306 \
+  -d mysql:8
+
+
+// create schema
+
+docker exec -i links-db mysql -uroot -psecret links_db < schema.sql
+
+
+//update count of links
+
+docker exec -i links-db mysql -uroot -psecret links_db -e "UPDATE link_stats SET total_count = (SELECT COUNT(*) FROM links) WHERE id = 1;"

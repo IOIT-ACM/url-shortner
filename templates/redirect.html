@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Opening Link...</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f0f2f5;
+        text-align: center;
+        padding: 20px;
+      }
+      .container {
+        background: white;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        width: 100%;
+      }
+      h1 {
+        font-size: 20px;
+        margin-bottom: 24px;
+        color: #1c1e21;
+      }
+      .open-button {
+        display: block;
+        width: 100%;
+        background-color: #0095f6;
+        color: white;
+        text-decoration: none;
+        padding: 14px 0;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 16px;
+        margin-bottom: 12px;
+        transition: background-color 0.2s;
+      }
+      .open-button:hover {
+        background-color: #0081d6;
+      }
+      .copy-button {
+        background: none;
+        border: 1px solid #dbdbdb;
+        color: #262626;
+        padding: 12px 0;
+        width: 100%;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .help-text {
+        margin-top: 24px;
+        font-size: 13px;
+        color: #8e8e8e;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body data-url="{{.OriginalURL}}">
+    <div class="container">
+      <h1>Tap to Open</h1>
+      <a href="{{.OriginalURL}}" class="open-button"> Open Link </a>
+      <button onclick="copyLink()" class="copy-button">Copy Link</button>
+      <p class="help-text">
+        Instagram/Facebook often blocks direct links. Tap "Open Link" above or
+        copy the link to open in your browser.
+      </p>
+    </div>
+    <script>
+      function copyLink() {
+        const url = document.body.getAttribute("data-url");
+        navigator.clipboard.writeText(url);
+        alert("Link copied!");
+      }
+      const target = document.body.getAttribute("data-url");
+      if (
+        !navigator.userAgent.includes("Instagram") &&
+        !navigator.userAgent.includes("FBAN")
+      ) {
+        setTimeout(() => {
+          window.location.href = target;
+        }, 1000);
+      }
+    </script>
+  </body>
+</html>
