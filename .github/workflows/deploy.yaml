@@ -3,7 +3,7 @@ name: Deploy Links App to cPanel
 on:
   push:
     branches:
-      - "**"
+      - master
 
 jobs:
   build-and-deploy:
