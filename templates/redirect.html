@@ -1,3 +1,4 @@
+<!-- redirect.html -->
 <!doctype html>
 <html>
   <head>
@@ -22,12 +23,12 @@
         padding: 40px;
         border-radius: 12px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        max-width: 400px;
+        max-width: 420px;
         width: 100%;
       }
       h1 {
         font-size: 20px;
-        margin-bottom: 24px;
+        margin-bottom: 18px;
         color: #1c1e21;
       }
       .open-button {
@@ -42,9 +43,10 @@
         font-size: 16px;
         margin-bottom: 12px;
         transition: background-color 0.2s;
+        text-align: center;
       }
-      .open-button:hover {
-        background-color: #0081d6;
+      .open-button:active {
+        transform: translateY(1px);
       }
       .copy-button {
         background: none;
@@ -58,38 +60,156 @@
         cursor: pointer;
       }
       .help-text {
-        margin-top: 24px;
+        margin-top: 18px;
         font-size: 13px;
         color: #8e8e8e;
         line-height: 1.5;
       }
+      .hidden {
+        display: none !important;
+      }
     </style>
   </head>
   <body data-url="{{.OriginalURL}}">
-    <div class="container">
-      <h1>Tap to Open</h1>
-      <a href="{{.OriginalURL}}" class="open-button"> Open Link </a>
-      <button onclick="copyLink()" class="copy-button">Copy Link</button>
-      <p class="help-text">
-        Instagram/Facebook often blocks direct links. Tap "Open Link" above or
-        copy the link to open in your browser.
+    <div class="container" id="ui">
+      <h1 id="title">Opening link...</h1>
+      <a
+        id="openBtn"
+        class="open-button"
+        href="{{.OriginalURL}}"
+        target="_blank"
+        rel="noopener noreferrer"
+        >Open Link</a
+      >
+      <button id="copyBtn" class="copy-button">Copy Link</button>
+      <p class="help-text" id="help">
+        If the link does not open automatically, tap "Open Link" or copy the
+        link to open in your browser.
       </p>
     </div>
     <script>
-      function copyLink() {
-        const url = document.body.getAttribute("data-url");
-        navigator.clipboard.writeText(url);
-        alert("Link copied!");
+      function uaLower() {
+        return (navigator.userAgent || "").toLowerCase();
       }
-      const target = document.body.getAttribute("data-url");
-      if (
-        !navigator.userAgent.includes("Instagram") &&
-        !navigator.userAgent.includes("FBAN")
-      ) {
-        setTimeout(() => {
-          window.location.href = target;
-        }, 1000);
+      function isAndroid() {
+        return /android/.test(uaLower());
       }
+      function isIOS() {
+        return /iphone|ipad|ipod/.test(uaLower());
+      }
+      function isInstagram() {
+        var u = uaLower();
+        return (
+          u.indexOf("instagram") !== -1 || u.indexOf("instagram for") !== -1
+        );
+      }
+      function isFacebookInApp() {
+        var u = uaLower();
+        return (
+          u.indexOf("fbav") !== -1 ||
+          u.indexOf("fban") !== -1 ||
+          u.indexOf("facebook") !== -1
+        );
+      }
+      function tryClipboardWrite(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          return navigator.clipboard.writeText(text);
+        }
+        try {
+          var ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.left = "-9999px";
+          document.body.appendChild(ta);
+          ta.focus();
+          ta.select();
+          var ok = document.execCommand("copy");
+          document.body.removeChild(ta);
+          return ok ? Promise.resolve() : Promise.reject();
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      }
+      function buildIntentUrl(original) {
+        try {
+          var u = new URL(original);
+          var noProto = original.replace(/^https?:\/\//, "");
+          var intent =
+            "intent://" +
+            noProto +
+            "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" +
+            encodeURIComponent(original) +
+            ";end";
+          return intent;
+        } catch (e) {
+          return original;
+        }
+      }
+      function openExternal(original) {
+        if (isAndroid()) {
+          var intentUrl = buildIntentUrl(original);
+          window.location.replace(intentUrl);
+        } else {
+          window.open(original, "_blank", "noopener");
+        }
+      }
+      function proceedAuto(original) {
+        if (!isInstagram() && !isFacebookInApp()) {
+          setTimeout(function () {
+            window.location.replace(original);
+          }, 600);
+          return;
+        }
+        if (isInstagram() || isFacebookInApp()) {
+          if (isAndroid()) {
+            openExternal(original);
+            return;
+          } else {
+            document.getElementById("title").textContent =
+              "Open in your browser";
+            document.getElementById("help").textContent =
+              "Instagram/iOS often opens links inside the app. Tap Open Link to open in your browser.";
+            document
+              .getElementById("openBtn")
+              .addEventListener("click", function (e) {
+                e.preventDefault();
+                openExternal(original);
+              });
+            return;
+          }
+        }
+        setTimeout(function () {
+          window.location.replace(original);
+        }, 600);
+      }
+      var original = document.body.getAttribute("data-url") || location.href;
+      var openBtn = document.getElementById("openBtn");
+      var copyBtn = document.getElementById("copyBtn");
+      openBtn.setAttribute("href", original);
+      openBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        openExternal(original);
+      });
+      copyBtn.addEventListener("click", function () {
+        tryClipboardWrite(original)
+          .then(function () {
+            alert("Link copied to clipboard");
+          })
+          .catch(function () {
+            var el = document.createElement("input");
+            el.value = original;
+            document.body.appendChild(el);
+            el.select();
+            try {
+              document.execCommand("copy");
+              alert("Link copied to clipboard");
+            } catch (e) {
+              alert("Copy failed. Long-press the link to copy.");
+            }
+            document.body.removeChild(el);
+          });
+      });
+      proceedAuto(original);
     </script>
   </body>
 </html>

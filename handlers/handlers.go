@@ -142,6 +142,9 @@ func (h *Handler) Redirect(c *gin.Context) {
 	}
 
 	if link.InstagramMode {
+		c.Header("Cache-Control", "no-store, no-cache, must-revalidate")
+		c.Header("Pragma", "no-cache")
+		c.Header("Expires", "0")
 		c.HTML(http.StatusOK, "redirect.html", gin.H{
 			"OriginalURL": link.OriginalURL,
 		})
