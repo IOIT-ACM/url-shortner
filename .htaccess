@@ -1,0 +1,15 @@
+RewriteEngine On
+
+# 1. SECURITY: Block public access to sensitive files
+# This prevents people from downloading your code or credentials
+<FilesMatch "^(links-server|restart\.sh|app\.log|.env|.git|.gitignore|package.json)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# 2. Force HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# 3. Forward ALL traffic to the Go App
+RewriteRule ^(.*)$ http://127.0.0.1:5937/$1 [P,L]

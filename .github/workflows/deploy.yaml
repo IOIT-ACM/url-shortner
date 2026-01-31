@@ -1,0 +1,87 @@
+name: Deploy Links App to cPanel
+
+on:
+  push:
+    branches:
+      - "**"
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22.x'
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Build Go Binary
+        run: |
+          CGO_ENABLED=0 GOOS=linux go build -a -o links-server .
+          chmod +x links-server
+
+      - name: Build frontend
+        run: bun install && bun run build
+        working-directory: ./frontend
+
+      - name: Pre-Upload Cleanup (Stop App)
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            fuser -k 5937/tcp || true
+            sleep 2
+
+      - name: Upload Binary and Restart Script
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "links-server,restart.sh"
+          target: "~/links.ioit.acm.org/"
+
+      - name: Upload Templates
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "templates/*"
+          target: "~/links.ioit.acm.org/"
+          strip_components: 0
+      - name: Upload Frontend Assets
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "frontend/dist/*"
+          target: "~/links.ioit.acm.org/"
+          strip_components: 0
+
+      - name: Set Permissions and Restart
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/links.ioit.acm.org/
+            chmod +x links-server restart.sh
+            bash restart.sh
