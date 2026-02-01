@@ -80,7 +80,7 @@ func (s *Store) GetAllLinks() ([]models.Link, int64, error) {
 		FROM links
 		WHERE deleted_at IS NULL
 		ORDER BY created_at DESC
-		LIMIT 30
+		LIMIT 10
 	`
 	rows, err := s.db.Query(query)
 	if err != nil {

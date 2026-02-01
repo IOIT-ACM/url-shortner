@@ -6,9 +6,24 @@ import { pluginCssMinimizer } from "@rsbuild/plugin-css-minimizer";
 export default defineConfig({
   plugins: [pluginReact(), pluginCssMinimizer()],
   html: {
-    title: "Minimal URL Shortener",
+    title: "Links by IOIT ACM",
     meta: {
-      description: "Fast, simple URL shortener with Instagram story support.",
+      description:
+        "Create clean, shareable short links with Instagram-friendly previews.",
+      keywords: "url shortener, ioit acm, links",
+      author: "IOIT ACM",
+      "theme-color": "#FF6A00",
+
+      "og:title": "Links by IOIT ACM",
+      "og:description": "Fast, simple URL shortener built by IOIT ACM.",
+      "og:type": "website",
+      "og:url": "https://links.ioit.acm.org",
+      "og:image": "https://links.ioit.acm.org/og-image.jpeg",
+
+      "twitter:card": "summary_large_image",
+      "twitter:title": "Links by IOIT ACM",
+      "twitter:description": "Fast, simple URL shortener built by IOIT ACM.",
+      "twitter:image": "https://links.ioit.acm.org/og-image.jpeg",
     },
   },
   source: {
