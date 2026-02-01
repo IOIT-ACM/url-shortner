@@ -71,7 +71,15 @@ function Index() {
           onError: (error: any) => {
             if (error.existing) {
               setResult(error.existing);
-              toast.error("Link already exists");
+              toast(error.message || "Link already exists", {
+                icon: "⚠️",
+                style: {
+                  borderRadius: "13px",
+                  background: "#fff",
+                  color: "#b45309",
+                  border: "1px solid #b45309",
+                },
+              });
             }
           },
         },
@@ -150,6 +158,7 @@ function Index() {
               value={url}
               onChange={(e) => handleUrlChange(e.target.value)}
               required
+              maxLength={2048}
               className="h-10 text-lg px-6 bg-white border-2 border-black/20 focus:border-black/50 transition-all rounded-2xl text-black placeholder:text-black/50"
               suffix={<LinkIcon size={20} className="text-black/50 mr-2" />}
             />
@@ -215,8 +224,8 @@ function Index() {
               type="button"
               onClick={handleCopy}
               className={`h-16 px-6 flex items-center justify-center rounded-2xl transition-all cursor-pointer shadow-lg ${copied
-                  ? "bg-green-600 shadow-green-600/30"
-                  : "bg-black hover:bg-black/80 shadow-black/30"
+                ? "bg-green-600 shadow-green-600/30"
+                : "bg-black hover:bg-black/80 shadow-black/30"
                 }`}
             >
               <div className="text-white flex items-center gap-2">

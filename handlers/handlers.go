@@ -45,6 +45,18 @@ func (h *Handler) ShortenURL(c *gin.Context) {
 		return
 	}
 
+	if len(req.URL) > 2048 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "URL is too long (max 2048 characters)"})
+		return
+	}
+
+	if IsInternalDomain(req.URL, h.baseURL) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Cannot shorten links belonging to this domain.",
+		})
+		return
+	}
+
 	if !isAllowedDomain(req.URL) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "URL domain not authorised to shorten by IOIT ACM Admins.",
@@ -62,13 +74,16 @@ func (h *Handler) ShortenURL(c *gin.Context) {
 
 	existing, err := h.store.GetLinkByUrl(req.URL, req.InstagramMode)
 	if err == nil {
-		c.JSON(http.StatusOK, ShortenResponse{
-			Code:          existing.Code,
-			ShortURL:      h.baseURL + "/" + existing.Code,
-			OriginalURL:   existing.OriginalURL,
-			InstagramMode: existing.InstagramMode,
-			CreatedAt:     existing.CreatedAt.Format(time.RFC3339),
-			Metadata:      metadata,
+		c.JSON(http.StatusConflict, gin.H{
+			"message": "This URL has already been shortened.",
+			"existing": ShortenResponse{
+				Code:          existing.Code,
+				ShortURL:      h.baseURL + "/" + existing.Code,
+				OriginalURL:   existing.OriginalURL,
+				InstagramMode: existing.InstagramMode,
+				CreatedAt:     existing.CreatedAt.Format(time.RFC3339),
+				Metadata:      metadata,
+			},
 		})
 		return
 	}

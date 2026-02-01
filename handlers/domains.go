@@ -24,6 +24,12 @@ var AllowedDomains = []string{
 	"ioit.acm.org",
 }
 
+var RestrictedDomains = []string{
+	"links.ioit.acm.org",
+	"localhost",
+	"127.0.0.1",
+}
+
 func isAllowedDomain(urlStr string) bool {
 	u, err := url.Parse(urlStr)
 	if err != nil {
@@ -41,6 +47,31 @@ func isAllowedDomain(urlStr string) bool {
 
 	for _, domain := range AllowedDomains {
 		if host == domain || strings.HasSuffix(host, "."+domain) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func IsInternalDomain(urlStr, baseURL string) bool {
+	u, err := url.Parse(urlStr)
+	if err != nil {
+		return false
+	}
+
+	host := strings.ToLower(u.Host)
+
+	base, err := url.Parse(baseURL)
+	if err == nil {
+		baseHost := strings.ToLower(base.Host)
+		if host == baseHost || strings.HasSuffix(host, "."+baseHost) {
+			return true
+		}
+	}
+
+	for _, restricted := range RestrictedDomains {
+		if host == restricted || strings.HasSuffix(host, "."+restricted) {
 			return true
 		}
 	}
