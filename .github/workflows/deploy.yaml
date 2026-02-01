@@ -32,7 +32,22 @@ jobs:
         run: bun install && bun run build
         working-directory: ./frontend
 
+      - name: Check SSH Connectivity
+        id: check_ssh
+        shell: bash
+        run: |
+          # Use timeout and bash tcp check to see if the port is open
+          if timeout 5s bash -c 'cat < /dev/tcp/${{ secrets.SSH_HOST }}/${{ secrets.SSH_PORT }}' > /dev/null 2>&1; then
+            echo "ssh_up=true" >> $GITHUB_OUTPUT
+            echo "Successfully connected to SSH host."
+          else
+            echo "ssh_up=false" >> $GITHUB_OUTPUT
+            echo "::warning title=Deployment Skipped::SSH Host ${{ secrets.SSH_HOST }} is unreachable. Exiting deployment safely."
+          fi
+        continue-on-error: true
+
       - name: Pre-Upload Cleanup (Stop App & Prep Dirs)
+        if: steps.check_ssh.outputs.ssh_up == 'true'
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -45,6 +60,7 @@ jobs:
             sleep 2
 
       - name: Upload Binary and Scripts
+        if: steps.check_ssh.outputs.ssh_up == 'true'
         uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -55,6 +71,7 @@ jobs:
           target: "~/links.ioit.acm.org/"
 
       - name: Upload Templates (Checked Path)
+        if: steps.check_ssh.outputs.ssh_up == 'true'
         uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -65,6 +82,7 @@ jobs:
           target: "~/links.ioit.acm.org/"
 
       - name: Upload Frontend Assets (Checked Path)
+        if: steps.check_ssh.outputs.ssh_up == 'true'
         uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -75,6 +93,7 @@ jobs:
           target: "~/links.ioit.acm.org/frontend/"
 
       - name: Set Permissions and Restart
+        if: steps.check_ssh.outputs.ssh_up == 'true'
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}

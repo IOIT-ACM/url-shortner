@@ -11,33 +11,65 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap"
       rel="stylesheet"
     />
-  </head>
 
-  <body
-    style="
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background: #ededed;
-      font-family: &quot;JetBrains Mono&quot;, monospace;
-      color: #000;
-      box-sizing: border-box;
-    "
-  >
-    <div
-      style="
+    <style>
+      body {
+        margin: 0;
+        background: #ededed;
+        font-family: "JetBrains Mono", monospace;
+        color: #000;
+      }
+
+      .page {
         min-height: 100vh;
-        padding: 64px 72px;
+        padding: 56px 64px;
         position: relative;
         box-sizing: border-box;
-      "
-    >
+      }
+
+      .code {
+        position: absolute;
+        right: 32px;
+        bottom: 16px;
+        font-size: 420px;
+        font-weight: 900;
+        line-height: 0.85;
+        color: #000;
+        opacity: 0.15;
+        pointer-events: none;
+      }
+
+      @media (max-width: 768px) {
+        .page {
+          padding: 20px 18px;
+        }
+
+        .code {
+          font-size: 140px;
+          right: 12px;
+          bottom: 8px;
+        }
+      }
+
+      @media (max-width: 420px) {
+        .page {
+          padding: 16px 14px;
+        }
+
+        .code {
+          font-size: 96px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
       <h1
         style="
           font-size: clamp(36px, 6vw, 72px);
           font-weight: 400;
-          margin: 0 0 24px 0;
+          margin: 0 0 16px 0;
           letter-spacing: -0.02em;
         "
       >
@@ -47,10 +79,10 @@
       {{ if .Code }}
       <p
         style="
-          max-width: 720px;
-          font-size: clamp(16px, 1.8vw, 20px);
-          line-height: 1.6;
-          margin-bottom: 96px;
+          max-width: 560px;
+          font-size: 16px;
+          line-height: 1.55;
+          margin: 0 0 32px 0;
           color: #111;
         "
       >
@@ -61,10 +93,10 @@
       {{ else }}
       <p
         style="
-          max-width: 720px;
-          font-size: clamp(16px, 1.8vw, 20px);
-          line-height: 1.6;
-          margin-bottom: 96px;
+          max-width: 560px;
+          font-size: 16px;
+          line-height: 1.55;
+          margin: 0 0 32px 0;
           color: #111;
         "
       >
@@ -73,42 +105,19 @@
       </p>
       {{ end }}
 
-      <a
-        href="/"
-        style="
-          display: inline-block;
-          margin-bottom: 24px;
-          font-size: 16px;
-          color: #000;
-          text-decoration: underline;
-        "
-        >Go back home</a
-      >
-
-      <div style="font-size: 18px; margin-top: auto">
-        <p style="margin: 0 0 16px 0">Heres what you should do:</p>
-        <ul style="margin: 0; padding-left: 22px">
-          <li style="margin: 8px 0; font-size: 16px">
+      <div style="font-size: 15px">
+        <p style="margin: 0 0 12px 0">Heres what you should do:</p>
+        <ul style="margin: 0; padding-left: 18px">
+          <li style="margin: 6px 0">
             Review the link for any typographical errors.
           </li>
-          <li style="margin: 8px 0; font-size: 16px">
+          <li style="margin: 6px 0">
             Reach out to the sender to get the correct one.
           </li>
         </ul>
       </div>
 
-      <div
-        style="
-          position: absolute;
-          right: 32px;
-          bottom: 16px;
-          font-size: clamp(140px, 28vw, 420px);
-          font-weight: 900;
-          line-height: 0.85;
-        "
-      >
-        404
-      </div>
+      <div class="code">404</div>
     </div>
   </body>
 </html>

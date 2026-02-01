@@ -29,6 +29,7 @@ pnpm-debug.log*
 build/
 dist/
 bin
+links-server
 
 # Env files
 .env
