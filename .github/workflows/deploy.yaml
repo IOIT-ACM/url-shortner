@@ -32,7 +32,7 @@ jobs:
         run: bun install && bun run build
         working-directory: ./frontend
 
-      - name: Pre-Upload Cleanup (Stop App)
+      - name: Pre-Upload Cleanup (Stop App & Prep Dirs)
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -40,10 +40,11 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            fuser -k 5937/tcp || true
+            pkill -f links-server || true
+            mkdir -p ~/links.ioit.acm.org/frontend
             sleep 2
 
-      - name: Upload Binary and Restart Script
+      - name: Upload Binary and Scripts
         uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -53,26 +54,25 @@ jobs:
           source: "links-server,restart.sh"
           target: "~/links.ioit.acm.org/"
 
-      - name: Upload Templates
+      - name: Upload Templates (Checked Path)
         uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "templates/*"
+          source: "templates"
           target: "~/links.ioit.acm.org/"
-          strip_components: 0
-      - name: Upload Frontend Assets
+
+      - name: Upload Frontend Assets (Checked Path)
         uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "frontend/dist/*"
-          target: "~/links.ioit.acm.org/"
-          strip_components: 0
+          source: "frontend/dist"
+          target: "~/links.ioit.acm.org/frontend/"
 
       - name: Set Permissions and Restart
         uses: appleboy/ssh-action@v1.2.0
@@ -83,5 +83,10 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/links.ioit.acm.org/
-            chmod +x links-server restart.sh
-            bash restart.sh
+            chmod +x links-server
+            if [ -f restart.sh ]; then
+              chmod +x restart.sh
+              bash restart.sh
+            else
+              nohup ./links-server > output.log 2>&1 &
+            fi
