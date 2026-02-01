@@ -44,6 +44,42 @@ func (s *Store) CreateLink(link *models.Link) error {
 	return tx.Commit()
 }
 
+func (s *Store) CreateLinkWithoutCode(link *models.Link) error {
+	query := `INSERT INTO links (original_url, instagram_mode, code) VALUES (?, ?, NULL)`
+	result, err := s.db.Exec(query, link.OriginalURL, link.InstagramMode)
+	if err != nil {
+		return err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return err
+	}
+	link.ID = id
+	return nil
+}
+
+func (s *Store) SetCodeForID(id int64, code string) error {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	query := `UPDATE links SET code = ? WHERE id = ?`
+	_, err = tx.Exec(query, code, id)
+	if err != nil {
+		return err
+	}
+
+	statsQuery := `UPDATE link_stats SET total_count = total_count + 1 WHERE id = 1`
+	if _, err := tx.Exec(statsQuery); err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
 func (s *Store) GetLinkByCode(code string) (*models.Link, error) {
 	query := `SELECT id, code, original_url, instagram_mode, created_at FROM links WHERE code = ? AND deleted_at IS NULL`
 	row := s.db.QueryRow(query, code)

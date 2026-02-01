@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>404 - Link not found</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body
+    style="
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #ededed;
+      font-family: &quot;JetBrains Mono&quot;, monospace;
+      color: #000;
+      box-sizing: border-box;
+    "
+  >
+    <div
+      style="
+        min-height: 100vh;
+        padding: 64px 72px;
+        position: relative;
+        box-sizing: border-box;
+      "
+    >
+      <h1
+        style="
+          font-size: clamp(36px, 6vw, 72px);
+          font-weight: 400;
+          margin: 0 0 24px 0;
+          letter-spacing: -0.02em;
+        "
+      >
+        /{{ if .Code }}{{ .Code }}{{ else }}Page{{ end }} not found
+      </h1>
+
+      {{ if .Code }}
+      <p
+        style="
+          max-width: 720px;
+          font-size: clamp(16px, 1.8vw, 20px);
+          line-height: 1.6;
+          margin-bottom: 96px;
+          color: #111;
+        "
+      >
+        The short link you tried to access,
+        <strong style="font-weight: 600">/{{ .Code }}</strong>, couldn't be
+        found. It might have been mistyped, moved, or deleted.
+      </p>
+      {{ else }}
+      <p
+        style="
+          max-width: 720px;
+          font-size: clamp(16px, 1.8vw, 20px);
+          line-height: 1.6;
+          margin-bottom: 96px;
+          color: #111;
+        "
+      >
+        The link you tried to access couldn't be found. It might have been
+        mistyped, moved, or deleted.
+      </p>
+      {{ end }}
+
+      <a
+        href="/"
+        style="
+          display: inline-block;
+          margin-bottom: 24px;
+          font-size: 16px;
+          color: #000;
+          text-decoration: underline;
+        "
+        >Go back home</a
+      >
+
+      <div style="font-size: 18px; margin-top: auto">
+        <p style="margin: 0 0 16px 0">Heres what you should do:</p>
+        <ul style="margin: 0; padding-left: 22px">
+          <li style="margin: 8px 0; font-size: 16px">
+            Review the link for any typographical errors.
+          </li>
+          <li style="margin: 8px 0; font-size: 16px">
+            Reach out to the sender to get the correct one.
+          </li>
+        </ul>
+      </div>
+
+      <div
+        style="
+          position: absolute;
+          right: 32px;
+          bottom: 16px;
+          font-size: clamp(140px, 28vw, 420px);
+          font-weight: 900;
+          line-height: 0.85;
+        "
+      >
+        404
+      </div>
+    </div>
+  </body>
+</html>

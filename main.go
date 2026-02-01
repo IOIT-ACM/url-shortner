@@ -14,6 +14,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/ioit-acm/links/encoding"
 	"github.com/ioit-acm/links/handlers"
 	"github.com/ioit-acm/links/middleware"
 	"github.com/ioit-acm/links/store"
@@ -24,6 +25,11 @@ import (
 func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found, reading from system environment variables")
+	}
+
+	obfuscationSecret := os.Getenv("OBFUSCATION_SECRET")
+	if err := encoding.InitObfuscation(obfuscationSecret); err != nil {
+		log.Fatalf("Failed to initialize obfuscation: %v", err)
 	}
 
 	dbUser := os.Getenv("DB_USER")
@@ -65,6 +71,7 @@ func main() {
 
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")
+
 	r.Static("/static", "./frontend/dist/static")
 	r.Static("/assets", "./frontend/dist/assets")
 
@@ -79,24 +86,44 @@ func main() {
 
 	r.NoRoute(func(c *gin.Context) {
 		path := c.Request.URL.Path
+
 		if strings.HasPrefix(path, "/api") {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Not Found"})
 			return
 		}
-		if _, err := os.Stat("./frontend/dist" + path); err == nil {
-			c.File("./frontend/dist" + path)
+
+		if path == "/" {
+			c.File("./frontend/dist/index.html")
 			return
 		}
+
 		code := strings.TrimPrefix(path, "/")
-		if len(code) > 0 && !strings.Contains(code, "/") && !strings.Contains(code, ".") {
-			_, err := linkStore.GetLinkByCode(code)
-			if err == nil {
-				c.Params = append(c.Params, gin.Param{Key: "code", Value: code})
-				h.Redirect(c)
+
+		if strings.Contains(code, "/") {
+			c.HTML(http.StatusNotFound, "404.html", gin.H{})
+			return
+		}
+
+		if strings.Contains(code, ".") {
+			filePath := "./frontend/dist/" + code
+			if _, err := os.Stat(filePath); err == nil {
+				c.File(filePath)
 				return
 			}
+			c.Status(http.StatusNotFound)
+			return
 		}
-		c.File("./frontend/dist/index.html")
+
+		_, err := linkStore.GetLinkByCode(code)
+		if err == nil {
+			c.Params = append(c.Params, gin.Param{Key: "code", Value: code})
+			h.Redirect(c)
+			return
+		}
+
+		c.HTML(http.StatusNotFound, "404.html", gin.H{
+			"Code": code,
+		})
 	})
 
 	srv := &http.Server{

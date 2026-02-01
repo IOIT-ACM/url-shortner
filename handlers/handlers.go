@@ -1,13 +1,13 @@
 package handlers
 
 import (
-	"crypto/rand"
-	"math/big"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ioit-acm/links/encoding"
 	"github.com/ioit-acm/links/models"
 	"github.com/ioit-acm/links/store"
 )
@@ -22,19 +22,6 @@ func NewHandler(store *store.Store, baseURL string) *Handler {
 		store:   store,
 		baseURL: strings.TrimRight(baseURL, "/"),
 	}
-}
-
-func generateCode() (string, error) {
-	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	b := make([]byte, 5)
-	for i := range b {
-		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
-		if err != nil {
-			return "", err
-		}
-		b[i] = charset[num.Int64()]
-	}
-	return string(b), nil
 }
 
 type ShortenRequest struct {
@@ -75,16 +62,45 @@ func (h *Handler) ShortenURL(c *gin.Context) {
 
 	existing, err := h.store.GetLinkByUrl(req.URL, req.InstagramMode)
 	if err == nil {
-		c.JSON(http.StatusConflict, gin.H{
-			"error": "Link already exists",
-			"existing": ShortenResponse{
-				Code:          existing.Code,
-				ShortURL:      h.baseURL + "/" + existing.Code,
-				OriginalURL:   existing.OriginalURL,
-				InstagramMode: existing.InstagramMode,
-				CreatedAt:     existing.CreatedAt.Format(time.RFC3339),
-				Metadata:      metadata,
-			},
+		c.JSON(http.StatusOK, ShortenResponse{
+			Code:          existing.Code,
+			ShortURL:      h.baseURL + "/" + existing.Code,
+			OriginalURL:   existing.OriginalURL,
+			InstagramMode: existing.InstagramMode,
+			CreatedAt:     existing.CreatedAt.Format(time.RFC3339),
+			Metadata:      metadata,
+		})
+		return
+	}
+
+	useCollisionFree := os.Getenv("USE_COLLISION_FREE") == "true"
+
+	if useCollisionFree {
+		link := &models.Link{
+			OriginalURL:   req.URL,
+			InstagramMode: req.InstagramMode,
+		}
+
+		if err := h.store.CreateLinkWithoutCode(link); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save link"})
+			return
+		}
+
+		obfuscatedID := encoding.ObfuscateID(link.ID)
+		code := encoding.EncodeBase62(obfuscatedID)
+
+		if err := h.store.SetCodeForID(link.ID, code); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to set code"})
+			return
+		}
+
+		c.JSON(http.StatusOK, ShortenResponse{
+			Code:          code,
+			ShortURL:      h.baseURL + "/" + code,
+			OriginalURL:   link.OriginalURL,
+			InstagramMode: link.InstagramMode,
+			CreatedAt:     time.Now().Format(time.RFC3339),
+			Metadata:      metadata,
 		})
 		return
 	}
@@ -134,7 +150,7 @@ func (h *Handler) Redirect(c *gin.Context) {
 	link, err := h.store.GetLinkByCode(code)
 	if err != nil {
 		if err == store.ErrNotFound {
-			c.Status(http.StatusNotFound)
+			c.HTML(http.StatusNotFound, "404.html", gin.H{"Code": code})
 			return
 		}
 		c.Status(http.StatusInternalServerError)
