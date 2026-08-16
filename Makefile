@@ -20,6 +20,6 @@ upload:
 	scp -i $(KEY) -P $(PORT) -r frontend/dist/* $(HOST):$(REMOTE_DIR)/frontend/dist/
 
 start:
-	ssh -i $(KEY) $(HOST) -p $(PORT) 'cd $(REMOTE_DIR) && nohup ./$(APP_NAME) > output.log 2>&1 &'
+	ssh -i $(KEY) $(HOST) -p $(PORT) 'cd $(REMOTE_DIR) && chmod +x restart.sh && bash restart.sh'
 
 deploy: build frontend stop upload start
