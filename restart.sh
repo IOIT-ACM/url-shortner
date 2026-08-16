@@ -21,6 +21,14 @@ chmod +x $APP_NAME
 echo "Starting $APP_NAME..."
 # Run with nohup and redirect output to app.log
 # We use 'env GIN_MODE=release' to ensure it runs in production mode
+export GIN_MODE=release
+# Go's scheduler sizes its OS-thread pool off GOMAXPROCS, which defaults to
+# the visible core count -- 64 on this host (the hypervisor's count, not what
+# this hosting account is actually entitled to). Left unset, this server sits
+# idle holding ~25 OS threads that count against the account's shared
+# process/task limit before a single real request arrives. Override via the
+# environment if 4 turns out to be too tight under real load.
+export GOMAXPROCS="${GOMAXPROCS:-4}"
 nohup ./$APP_NAME >>$TARGET_DIR/app.log 2>&1 &
 
 # Give it a second to start
