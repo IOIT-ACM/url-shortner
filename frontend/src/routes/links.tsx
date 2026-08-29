@@ -42,7 +42,7 @@ function LinksPage() {
         { opacity: 1, y: 0, duration: 0.5, stagger: 0.08, ease: "power2.out" },
       );
     }
-  }, [isLoading, data]);
+  }, [isLoading]);
 
   const handleCopy = async (text: string) => {
     try {
@@ -142,7 +142,7 @@ function LinksPage() {
   }, [isError, retried, refetch]);
 
   return (
-    <div ref={containerRef} className="w-full max-w-4xl mx-auto px-4 sm:px-6">
+    <div ref={containerRef} className="w-full max-w-4xl mx-auto">
       <div className="animate-in">
         <Back subtitle="All Links" />
       </div>
@@ -160,7 +160,7 @@ function LinksPage() {
         </div>
       )}
 
-      <div className="overflow-hidden border border-black/10 rounded-2xl bg-white shadow-sm mb-10 animate-in min-w-0 w-full">
+      <div className="overflow-hidden border border-black/10 rounded-2xl bg-white shadow-sm mb-10 animate-in">
         <div className="overflow-x-auto">
           <table className="w-full table-fixed border-collapse">
             <thead>
