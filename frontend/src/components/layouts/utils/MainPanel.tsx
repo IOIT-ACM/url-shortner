@@ -83,16 +83,14 @@ export function MainPanel({ children }: MainPanelProps) {
             if (!mainRef.current || !contentRef.current) return;
 
             const contentHeight = contentRef.current.scrollHeight + 180;
-            const contentWidth = contentRef.current.scrollWidth + 48;
-            const height = Math.min(contentHeight, window.innerHeight * 0.8);
+            const height = Math.min(contentHeight, window.innerHeight * 0.9);
 
             if (isFirstRender.current) {
-                gsap.set(mainRef.current, { height, width: contentWidth });
+                gsap.set(mainRef.current, { height });
                 isFirstRender.current = false;
             } else {
                 gsap.to(mainRef.current, {
                     height,
-                    width: contentWidth,
                     duration: 0.45,
                     ease: "power2.inOut",
                 });
@@ -107,7 +105,7 @@ export function MainPanel({ children }: MainPanelProps) {
         <main
             ref={mainRef}
             style={{ visibility: "hidden" }}
-            className="absolute bottom-0 right-0 bg-white md:rounded-tl-[140px] rounded-tl-[100px] px-6 py-12 z-10 overflow-y-auto overflow-hidden md:w-full max-w-screen md:max-w-[900px]"
+            className="absolute bottom-0 right-0 bg-white md:rounded-tl-[140px] rounded-tl-[100px] px-6 py-12 z-10 overflow-y-auto w-full max-w-screen md:max-w-[900px]"
         >
             <div ref={contentRef}>
                 <div ref={contentWrapperRef} className="will-change-transform overflow-hidden">
